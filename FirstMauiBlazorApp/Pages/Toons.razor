@@ -1,0 +1,73 @@
+﻿@page "/toons"
+
+@using System.Text.Json
+@using System.Text.Json.Serialization
+
+<h1>Toon Characters</h1>
+
+@if (toonList == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <tbody>
+            @foreach (var item in toonList)
+            {
+                <tr>
+                    <td>@item.FullName</td>
+                    <td><img src="@item.PictureUrl" style="height: 40px" alt="@item.FirstName @item.LastName"> </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Toon[] toonList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        HttpClient client = new HttpClient();
+        var stream = client.GetStreamAsync("https://api4all.azurewebsites.net/api/people");
+        toonList = await JsonSerializer.DeserializeAsync<Toon[]>(await stream);
+    }
+
+    public class Toon
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("lastName")]
+        public string LastName { get; set; }
+
+        [JsonPropertyName("firstName")]
+        public string FirstName { get; set; }
+
+        [JsonPropertyName("occupation")]
+        public string Occupation { get; set; }
+
+        [JsonPropertyName("gender")]
+        public string Gender { get; set; }
+
+        [JsonPropertyName("pictureUrl")]
+        public string PictureUrl { get; set; }
+
+        [JsonPropertyName("votes")]
+        public int Votes { get; set; }
+
+        public string FullName
+        {
+            get
+            {
+                return string.Format("{0} {1}", this.FirstName, this.LastName);
+            }
+        }
+
+        public override string ToString()
+        {
+            return string.Format($"{Id}\t{FullName}\t{Occupation}\t{Gender}\t{PictureUrl}\t{Votes}");
+        }
+    }
+}
